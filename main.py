@@ -1,6 +1,12 @@
 import sys
 import urllib.request as req
 
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.keys import Keys
+
+
 from bs4 import BeautifulSoup
 
 from PyQt5.QtWidgets import *
@@ -13,6 +19,10 @@ class Main(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.initUi()
         self.initSignal()
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")  # CLI (User-agent)
+        self.driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=chrome_options)
+        self.driver.implicitly_wait(5)
 
     # 화면 초기화
     def initUi(self):
@@ -35,9 +45,17 @@ class Main(QMainWindow, Ui_MainWindow):
         blognumber = blogurl.split('/')[4]
         url = "https://m.blog.naver.com/SympathyHistoryList.naver?blogId=" + naverid + "&logNo=" + blognumber + "&layoutWidthClassName=contw-966"
 
-        res = req.urlopen(url).read()
+        # print(url)
+        self.driver.get(url)
+        self.driver.implicitly_wait(30)
 
-        soup = BeautifulSoup(res, "html.parser")
+        for c in range(0,1000):
+            self.driver.find_element_by_tag_name('body').send_keys(Keys.PAGE_DOWN)
+            self.driver.implicitly_wait(30)
+
+        # res = req.urlopen(url).read()
+        # soup = BeautifulSoup(res, "html.parser")
+        soup = BeautifulSoup(self.driver.page_source, "html.parser")
 
         # print(list_li)
 
